@@ -1,0 +1,12 @@
+﻿@model List<Product>
+
+@{ ViewData["Title"] = "Products"; }
+
+@foreach (var item in Model)
+{
+    <img src="@item.Image" width="80" height="80"/>
+    <div>id: @item.Id</div>
+    <div>Title: @item.Title</div>
+}
+<br/>
+<div>Products count: @Model.Count</div>
