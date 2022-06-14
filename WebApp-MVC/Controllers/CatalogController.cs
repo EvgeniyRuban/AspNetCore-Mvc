@@ -14,7 +14,6 @@ namespace WebApp_MVC.Controllers
 
         [HttpGet]
         public IActionResult Products() => View(_catalog.Items);
-
         [HttpGet]
         public IActionResult ProductAddition() => View();
 
