@@ -21,7 +21,7 @@ namespace WebApp_MVC.Controllers
         [HttpPost]
         public IActionResult ProductAddition([FromForm]Product item)
         {
-            _catalog.Items.Add(item);
+            _catalog.Add(item);
             return View();
         }
     }
