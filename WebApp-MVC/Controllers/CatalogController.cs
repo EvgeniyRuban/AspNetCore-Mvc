@@ -14,14 +14,13 @@ namespace WebApp_MVC.Controllers
 
         [HttpGet]
         public IActionResult Products() => View(_catalog.Items);
-
         [HttpGet]
         public IActionResult ProductAddition() => View();
 
         [HttpPost]
         public IActionResult ProductAddition([FromForm]Product item)
         {
-            _catalog.Items.Add(item);
+            _catalog.Add(item);
             return View();
         }
     }
