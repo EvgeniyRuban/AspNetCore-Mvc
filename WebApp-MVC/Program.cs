@@ -3,7 +3,7 @@ using WebApp_MVC.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
-builder.Services.AddSingleton<Catalog>();
+builder.Services.AddSingleton<Catalog<ICatalogItem>>();
 
 var app = builder.Build();
 
