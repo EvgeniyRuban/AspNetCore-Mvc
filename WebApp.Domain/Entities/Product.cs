@@ -1,4 +1,4 @@
-﻿namespace WebApp_MVC.Models;
+﻿namespace WebApp.Domain;
 
 public sealed class Product : ICatalogItem
 {

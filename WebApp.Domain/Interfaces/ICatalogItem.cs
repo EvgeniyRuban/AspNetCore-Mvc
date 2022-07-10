@@ -1,4 +1,4 @@
-﻿namespace WebApp_MVC.Models;
+﻿namespace WebApp.Domain;
 
 public interface ICatalogItem
 {

@@ -8,7 +8,7 @@
     }
   },
   "profiles": {
-    "WebApp_MVC": {
+    "WebApp": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
