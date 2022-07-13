@@ -15,15 +15,6 @@ public class ProductCatalogController : Controller
 
         _productService = productService;
         _emailService = emailService;
-        _emailService.Sender = new MessageSenderInfo
-        {
-            Name = "asp2022gb@rodion-m.ru",
-            Host = "smtp.beget.com",
-            Login = "asp2022gb@rodion-m.ru",
-            Address = "asp2022gb@rodion-m.ru",
-            Password = "3drtLSa1",
-            Port = 25,
-        };
     }
 
     [HttpGet]

@@ -1,4 +1,5 @@
 ﻿using MailKit.Net.Smtp;
+using Microsoft.Extensions.Options;
 using MimeKit;
 using WebApp.Domain;
 
@@ -8,15 +9,27 @@ public sealed class SmtpEmailService : IEmailService
 {
     private MessageSenderInfo _sender = null!;
 
-    public MessageSenderInfo Sender 
+    public SmtpEmailService(IOptions<SmtpCredetials> options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        Sender = new()
+        {
+            Name = options.Value.Name,
+            Host = options.Value.Host,
+            Login = options.Value.Login,
+            Address = options.Value.Address,
+            Password = options.Value.Password,
+            Port = options.Value.Port,
+        };
+    }
+
+    public MessageSenderInfo Sender
     {
         get => _sender;
         set
         {
-            if (value is null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             if (string.IsNullOrEmpty(value.Address)
             || string.IsNullOrEmpty(value.Login)

@@ -4,6 +4,9 @@ using WebApp.DAL;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.Configure<SmtpCredetials>(
+    builder.Configuration.GetSection(nameof(SmtpCredetials)));
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<Catalog<Product>>();
 builder.Services.AddSingleton<IProductRepository, ProductRepository>();
