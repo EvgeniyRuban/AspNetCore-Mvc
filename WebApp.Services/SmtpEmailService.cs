@@ -9,7 +9,7 @@ public sealed class SmtpEmailService : IEmailService
 {
     private MessageSenderInfo _sender = null!;
 
-    public SmtpEmailService(IOptions<SmtpCredetials> options)
+    public SmtpEmailService(IOptions<SmtpCredentials> options)
     {
         ArgumentNullException.ThrowIfNull(options);
 
