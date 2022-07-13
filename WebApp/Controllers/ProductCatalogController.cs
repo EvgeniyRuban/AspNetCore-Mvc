@@ -10,6 +10,9 @@ public class ProductCatalogController : Controller
 
     public ProductCatalogController(IProductService productService, IEmailService emailService)
     {
+        ArgumentNullException.ThrowIfNull(productService);
+        ArgumentNullException.ThrowIfNull(emailService);
+
         _productService = productService;
         _emailService = emailService;
         _emailService.Sender = new MessageSenderInfo
