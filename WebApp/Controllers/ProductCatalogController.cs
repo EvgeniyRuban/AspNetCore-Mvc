@@ -12,6 +12,15 @@ public class ProductCatalogController : Controller
     {
         _productService = productService;
         _emailService = emailService;
+        _emailService.Sender = new MessageSenderInfo
+        {
+            Name = "asp2022gb@rodion-m.ru",
+            Host = "smtp.beget.com",
+            Login = "asp2022gb@rodion-m.ru",
+            Address = "asp2022gb@rodion-m.ru",
+            Password = "3drtLSa1",
+            Port = 25,
+        };
     }
 
     [HttpGet]
@@ -28,6 +37,20 @@ public class ProductCatalogController : Controller
     public async Task<IActionResult> ProductAddition([FromForm] ProductToCreate product, CancellationToken cancelToken = default)
     {
         await _productService.AddAsync(product, cancelToken);
+        var message = new MailMessage
+        {
+            Subject = "Test",
+            Body = $"Product added to catalog.\n" +
+            $"Title: {product.Title}\n" +
+            $"Image: {product.Image}\n"
+        };
+        var recipient = new MessageRecipientInfo
+        {
+            Name = "Study",
+            Address = "csharptest478@gmail.com",
+        };
+
+        _emailService.SendMessage(message, recipient);
 
         return View();
     }

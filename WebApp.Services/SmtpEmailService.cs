@@ -57,7 +57,7 @@ public sealed class SmtpEmailService : IEmailService
         mimeMessage.From.Add(new MailboxAddress(Sender.Name, Sender.Address));
         foreach (var recipient in reсipients)
         {
-            mimeMessage.From.Add(new MailboxAddress(recipient.Name, recipient.Address));
+            mimeMessage.To.Add(new MailboxAddress(recipient.Name, recipient.Address));
         }
         mimeMessage.Subject = message.Subject;
         mimeMessage.Body = new TextPart(MimeKit.Text.TextFormat.Plain)
