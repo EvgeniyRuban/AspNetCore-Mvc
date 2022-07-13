@@ -16,11 +16,8 @@ public sealed class ProductRepository : IProductRepository
     /// </summary>
     /// <exception cref="ArgumentNullException"></exception>
     public async Task AddAsync(ProductToCreate item, CancellationToken cancelToken = default)
-    {
-        if(item is null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+   {
+        ArgumentNullException.ThrowIfNull(item);
 
         var product = new Product
         {
@@ -96,10 +93,7 @@ public sealed class ProductRepository : IProductRepository
     /// <exception cref="ArgumentNullException"></exception>
     public async Task<bool> UpdateAsync(long id, ProductToUpdate newItem, CancellationToken cancelToken = default)
     {
-        if(newItem is null)
-        {
-            throw new ArgumentNullException(nameof(newItem));
-        }
+        ArgumentNullException.ThrowIfNull(newItem);
 
         var product = new Product
         {

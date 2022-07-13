@@ -38,15 +38,8 @@ public sealed class SmtpEmailService : IEmailService
     /// <exception cref="ArgumentException"></exception>
     public void SendMessage(MailMessage message, params MessageRecipientInfo[] reсipients)
     {
-        if (message is null)
-        {
-            throw new ArgumentNullException(nameof(message));
-        }
-
-        if (reсipients is null)
-        {
-            throw new ArgumentNullException(nameof(reсipients));
-        }
+        ArgumentNullException.ThrowIfNull(reсipients);
+        ArgumentNullException.ThrowIfNull(message);
 
         if(reсipients.Length == 0)
         {
