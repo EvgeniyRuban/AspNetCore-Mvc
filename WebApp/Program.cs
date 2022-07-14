@@ -1,13 +1,20 @@
 using WebApp.Domain;
 using WebApp.Services;
 using WebApp.DAL;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllersWithViews();
+
+builder.Host.UseSerilog((ctx, conf) =>
+{
+    conf.ReadFrom.Configuration(ctx.Configuration);
+});
 
 builder.Services.Configure<SmtpCredentials>(
     builder.Configuration.GetSection(nameof(SmtpCredentials)));
 
-builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<Catalog<Product>>();
 builder.Services.AddSingleton<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
@@ -21,7 +28,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseStaticFiles();
+
+app.UseSerilogRequestLogging();
 
 app.UseRouting();
 
