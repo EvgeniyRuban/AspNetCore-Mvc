@@ -1,20 +1,32 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MailKit.Security;
+using Microsoft.AspNetCore.Mvc;
+using Polly;
 using WebApp.Domain;
 
 namespace WebApp.Controllers;
 
 public class ProductCatalogController : Controller
 {
-    private readonly IProductService _productService;
+    private readonly ILogger<ProductCatalogController> _logger;
     private readonly IEmailService _emailService;
+    private readonly IProductService _productService;
+    private readonly MessageRecipientInfo _recipient = new ()
+    {
+        Name = "Study",
+        Address = "csharptest478@gmail.com",
+    };
 
-    public ProductCatalogController(IProductService productService, IEmailService emailService)
+    public ProductCatalogController(
+        IProductService productService, 
+        IEmailService emailService, 
+        ILogger<ProductCatalogController> logger)
     {
         ArgumentNullException.ThrowIfNull(productService);
         ArgumentNullException.ThrowIfNull(emailService);
 
         _productService = productService;
         _emailService = emailService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -28,9 +40,12 @@ public class ProductCatalogController : Controller
     public IActionResult ProductAddition() => View();
 
     [HttpPost]
-    public async Task<IActionResult> ProductAddition([FromForm] ProductToCreate product, CancellationToken cancelToken = default)
+    public async Task<IActionResult> ProductAddition(
+        [FromForm] ProductToCreate product, 
+        CancellationToken cancelToken = default)
     {
         await _productService.AddAsync(product, cancelToken);
+
         var message = new MailMessage
         {
             Subject = "Test",
@@ -38,13 +53,22 @@ public class ProductCatalogController : Controller
             $"Title: {product.Title}\n" +
             $"Image: {product.Image}\n"
         };
-        var recipient = new MessageRecipientInfo
-        {
-            Name = "Study",
-            Address = "csharptest478@gmail.com",
-        };
 
-        _emailService.SendMessage(message, recipient);
+        var policy = Policy
+        .Handle<Exception>()
+        .RetryAsync(3, onRetry: (exception, retryAttempt) =>
+        {
+            _logger.LogWarning(
+            exception, "Error while sending email. Retrying: {Attempt}", retryAttempt);
+        });
+
+        var result = await policy.ExecuteAndCaptureAsync(
+            token => _emailService.SendMessageAsync(message, _recipient, token), cancelToken);
+
+        if (result.Outcome == OutcomeType.Failure)
+        {
+            _logger.LogError(result.FinalException, "There was an error while sending email");
+        }
 
         return View();
     }

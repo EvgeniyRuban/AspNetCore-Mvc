@@ -1,4 +1,5 @@
 ﻿using MailKit.Net.Smtp;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using WebApp.Domain;
@@ -7,21 +8,31 @@ namespace WebApp.Services;
 
 public sealed class SmtpEmailService : IEmailService
 {
+    private ILogger<SmtpEmailService> _logger;
     private MessageSenderInfo _sender = null!;
 
-    public SmtpEmailService(IOptions<SmtpCredentials> options)
+    public SmtpEmailService(IOptions<SmtpCredentials> options, ILogger<SmtpEmailService> logger)
     {
         ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(logger);
 
-        Sender = new()
+        _logger = logger;
+        try
         {
-            Name = options.Value.Name,
-            Host = options.Value.Host,
-            Login = options.Value.Login,
-            Address = options.Value.Address,
-            Password = options.Value.Password,
-            Port = options.Value.Port,
-        };
+            Sender = new()
+            {
+                Name = options.Value.Name,
+                Host = options.Value.Host,
+                Login = options.Value.Login,
+                Address = options.Value.Address,
+                Password = options.Value.Password,
+                Port = options.Value.Port,
+            };
+        }  
+        catch(Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+        }
     }
 
     public MessageSenderInfo Sender
@@ -45,38 +56,50 @@ public sealed class SmtpEmailService : IEmailService
     }
 
     /// <summary>
-    /// Sending a message to all of recipients.
+    /// Sending a message recipient.
     /// </summary>
+    /// <exception cref="TaskCanceledException"></exception>
     /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="ArgumentException"></exception>
-    public void SendMessage(MailMessage message, params MessageRecipientInfo[] reсipients)
+    public async Task SendMessageAsync(
+        MailMessage message, 
+        MessageRecipientInfo reсipient, 
+        CancellationToken cancelToken = default)
     {
-        ArgumentNullException.ThrowIfNull(reсipients);
+        ArgumentNullException.ThrowIfNull(reсipient);
         ArgumentNullException.ThrowIfNull(message);
 
-        if(reсipients.Length == 0)
+        if (cancelToken.IsCancellationRequested)
         {
-            throw new ArgumentException($"The number of recipients must be greater than 0.");
+            throw new TaskCanceledException();
         }
 
         var mimeMessage = new MimeMessage();
         mimeMessage.From.Add(new MailboxAddress(Sender.Name, Sender.Address));
-        foreach (var recipient in reсipients)
-        {
-            mimeMessage.To.Add(new MailboxAddress(recipient.Name, recipient.Address));
-        }
+        mimeMessage.To.Add(new MailboxAddress(reсipient.Name, reсipient.Address));
         mimeMessage.Subject = message.Subject;
         mimeMessage.Body = new TextPart(MimeKit.Text.TextFormat.Plain)
         {
             Text = message.Body,
         };
 
-        using (var client = new SmtpClient())
+        try
         {
-            client.Connect(Sender.Host, Sender.Port, false);
-            client.Authenticate(Sender.Login, Sender.Password);
-            client.Send(mimeMessage);
-            client.Disconnect(true);
+            using (var client = new SmtpClient())
+            {
+                await client.ConnectAsync(Sender.Host, Sender.Port, false);
+                await client.AuthenticateAsync(Sender.Login, Sender.Password);
+                await client.SendAsync(mimeMessage);
+                await client.DisconnectAsync(true);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+        }
+
+        if (cancelToken.IsCancellationRequested)
+        {
+            throw new TaskCanceledException();
         }
     }
 }
