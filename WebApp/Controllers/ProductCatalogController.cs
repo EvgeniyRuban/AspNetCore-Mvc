@@ -1,5 +1,4 @@
-﻿using MailKit.Security;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Polly;
 using WebApp.Domain;
 
@@ -8,7 +7,7 @@ namespace WebApp.Controllers;
 public class ProductCatalogController : Controller
 {
     private readonly ILogger<ProductCatalogController> _logger;
-    private readonly IEmailService _emailService;
+    private readonly IEmailSender _emailService;
     private readonly IProductService _productService;
     private readonly MessageRecipientInfo _recipient = new ()
     {
@@ -18,7 +17,7 @@ public class ProductCatalogController : Controller
 
     public ProductCatalogController(
         IProductService productService, 
-        IEmailService emailService, 
+        IEmailSender emailService, 
         ILogger<ProductCatalogController> logger)
     {
         ArgumentNullException.ThrowIfNull(productService);

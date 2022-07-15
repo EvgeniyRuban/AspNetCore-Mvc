@@ -6,8 +6,9 @@ using WebApp.Domain;
 
 namespace WebApp.Services;
 
-public sealed class SmtpEmailService : IEmailService
+public sealed class SmtpEmailService : IEmailSender, IDisposable
 {
+    private readonly SmtpClient _smtpClient = new ();
     private ILogger<SmtpEmailService> _logger;
     private MessageSenderInfo _sender = null!;
 
@@ -56,7 +57,7 @@ public sealed class SmtpEmailService : IEmailService
     }
 
     /// <summary>
-    /// Sending a message recipient.
+    /// Sending a message to the recipient.
     /// </summary>
     /// <exception cref="TaskCanceledException"></exception>
     /// <exception cref="ArgumentNullException"></exception>
@@ -67,11 +68,6 @@ public sealed class SmtpEmailService : IEmailService
     {
         ArgumentNullException.ThrowIfNull(reсipient);
         ArgumentNullException.ThrowIfNull(message);
-
-        if (cancelToken.IsCancellationRequested)
-        {
-            throw new TaskCanceledException();
-        }
 
         var mimeMessage = new MimeMessage();
         mimeMessage.From.Add(new MailboxAddress(Sender.Name, Sender.Address));
@@ -84,22 +80,40 @@ public sealed class SmtpEmailService : IEmailService
 
         try
         {
-            using (var client = new SmtpClient())
-            {
-                await client.ConnectAsync(Sender.Host, Sender.Port, false);
-                await client.AuthenticateAsync(Sender.Login, Sender.Password);
-                await client.SendAsync(mimeMessage);
-                await client.DisconnectAsync(true);
-            }
+            await EnsureConnectionAndAuthetication(cancelToken);
+            await _smtpClient.SendAsync(mimeMessage, cancelToken);
+            await _smtpClient.DisconnectAsync(true, cancelToken);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
         }
-
-        if (cancelToken.IsCancellationRequested)
+    }
+    private async Task EnsureConnectionAndAuthetication(CancellationToken cancelToken = default)
+    {
+        await EnsureConnection(cancelToken);
+        await EnsureAuthetication(cancelToken);
+    }
+    private async Task EnsureConnection(CancellationToken cancelToken = default)
+    {
+        if (!_smtpClient.IsConnected)
         {
-            throw new TaskCanceledException();
+            await _smtpClient.ConnectAsync(Sender.Host, Sender.Port, false, cancelToken);
         }
+    }
+    private async Task EnsureAuthetication(CancellationToken cancelToken = default)
+    {
+        if (!_smtpClient.IsAuthenticated)
+        {
+            await _smtpClient.AuthenticateAsync(Sender.Login, Sender.Password, cancelToken);
+        }
+    }
+    public void Dispose()
+    {
+        if (_smtpClient.IsConnected)
+        {
+            _smtpClient.Disconnect(true);
+        }
+        _smtpClient.Dispose();
     }
 }

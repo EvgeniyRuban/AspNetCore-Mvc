@@ -18,7 +18,7 @@ builder.Services.Configure<SmtpCredentials>(
 builder.Services.AddSingleton<Catalog<Product>>();
 builder.Services.AddSingleton<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+builder.Services.AddScoped<IEmailSender, SmtpEmailService>();
 
 var app = builder.Build();
 
