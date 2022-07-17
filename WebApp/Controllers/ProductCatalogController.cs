@@ -7,7 +7,7 @@ namespace WebApp.Controllers;
 public class ProductCatalogController : Controller
 {
     private readonly ILogger<ProductCatalogController> _logger;
-    private readonly IEmailSender _emailService;
+    private readonly IEmailSender _emailSender;
     private readonly IProductService _productService;
     private readonly MessageRecipientInfo _recipient = new ()
     {
@@ -24,14 +24,14 @@ public class ProductCatalogController : Controller
         ArgumentNullException.ThrowIfNull(emailService);
 
         _productService = productService;
-        _emailService = emailService;
+        _emailSender = emailService;
         _logger = logger;
     }
 
     [HttpGet]
     public async Task<ActionResult<IReadOnlyCollection<ProductResponse>>> Products(CancellationToken cancelToken = default)
     {
-        var products = await _productService.GetAllAsync(cancelToken);
+        var products = await _productService.GetAll(cancelToken);
         return View(products);
     }
 
@@ -41,9 +41,21 @@ public class ProductCatalogController : Controller
     [HttpPost]
     public async Task<IActionResult> ProductAddition(
         [FromForm] ProductToCreate product, 
-        CancellationToken cancelToken = default)
+        CancellationToken cancellationToken = default)
     {
-        await _productService.AddAsync(product, cancelToken);
+        try
+        {
+            await _productService.Add(product, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Operation was cancelled.", cancellationToken);
+            return View();
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+        }
 
         var message = new MailMessage
         {
@@ -62,7 +74,7 @@ public class ProductCatalogController : Controller
         });
 
         var result = await policy.ExecuteAndCaptureAsync(
-            token => _emailService.SendMessageAsync(message, _recipient, token), cancelToken);
+            token => _emailSender.SendMessage(message, _recipient, token), cancellationToken);
 
         if (result.Outcome == OutcomeType.Failure)
         {

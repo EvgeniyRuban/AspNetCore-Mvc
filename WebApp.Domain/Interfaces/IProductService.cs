@@ -2,9 +2,9 @@
 
 public interface IProductService
 {
-    Task AddAsync(ProductToCreate item, CancellationToken cancelToken = default);
-    Task<ProductResponse> GetAsync(long id, CancellationToken cancelToken = default);
-    Task<IReadOnlyCollection<ProductResponse>> GetAllAsync(CancellationToken cancelToken = default);
-    Task<bool> UpdateAsync(long id, ProductToUpdate newItem, CancellationToken cancelToken = default);
-    Task<bool> RemoveAsync(long id, CancellationToken cancelToken = default);
+    Task Add(ProductToCreate item, CancellationToken cancellationToken = default);
+    Task<ProductResponse> Get(long id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyCollection<ProductResponse>> GetAll(CancellationToken cancellationToken = default);
+    Task<bool> Update(long id, ProductToUpdate newItem, CancellationToken cancellationToken = default);
+    Task<bool> Remove(long id, CancellationToken cancellationToken = default);
 }

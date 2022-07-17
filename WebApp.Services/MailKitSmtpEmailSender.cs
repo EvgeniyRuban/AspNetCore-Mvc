@@ -6,13 +6,15 @@ using WebApp.Domain;
 
 namespace WebApp.Services;
 
-public sealed class SmtpEmailService : IEmailSender, IDisposable
+public sealed class MailKitSmtpEmailSender : IEmailSender, IDisposable, IAsyncDisposable
 {
     private readonly SmtpClient _smtpClient = new ();
-    private ILogger<SmtpEmailService> _logger;
+    private ILogger<MailKitSmtpEmailSender> _logger;
     private MessageSenderInfo _sender = null!;
 
-    public SmtpEmailService(IOptions<SmtpCredentials> options, ILogger<SmtpEmailService> logger)
+    public MailKitSmtpEmailSender(
+        IOptions<SmtpCredentials> options, 
+        ILogger<MailKitSmtpEmailSender> logger)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(logger);
@@ -61,10 +63,10 @@ public sealed class SmtpEmailService : IEmailSender, IDisposable
     /// </summary>
     /// <exception cref="TaskCanceledException"></exception>
     /// <exception cref="ArgumentNullException"></exception>
-    public async Task SendMessageAsync(
+    public async Task SendMessage(
         MailMessage message, 
         MessageRecipientInfo reсipient, 
-        CancellationToken cancelToken = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(reсipient);
         ArgumentNullException.ThrowIfNull(message);
@@ -80,32 +82,32 @@ public sealed class SmtpEmailService : IEmailSender, IDisposable
 
         try
         {
-            await EnsureConnectionAndAuthetication(cancelToken);
-            await _smtpClient.SendAsync(mimeMessage, cancelToken);
-            await _smtpClient.DisconnectAsync(true, cancelToken);
+            await EnsureConnectionAndAuthetication(cancellationToken);
+            await _smtpClient.SendAsync(mimeMessage, cancellationToken);
+            await _smtpClient.DisconnectAsync(true, cancellationToken);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
         }
     }
-    private async Task EnsureConnectionAndAuthetication(CancellationToken cancelToken = default)
+    private async Task EnsureConnectionAndAuthetication(CancellationToken cancellationToken = default)
     {
-        await EnsureConnection(cancelToken);
-        await EnsureAuthetication(cancelToken);
+        await EnsureConnection(cancellationToken);
+        await EnsureAuthetication(cancellationToken);
     }
-    private async Task EnsureConnection(CancellationToken cancelToken = default)
+    private async Task EnsureConnection(CancellationToken cancellationToken = default)
     {
         if (!_smtpClient.IsConnected)
         {
-            await _smtpClient.ConnectAsync(Sender.Host, Sender.Port, false, cancelToken);
+            await _smtpClient.ConnectAsync(Sender.Host, Sender.Port, false, cancellationToken);
         }
     }
-    private async Task EnsureAuthetication(CancellationToken cancelToken = default)
+    private async Task EnsureAuthetication(CancellationToken cancellationToken = default)
     {
         if (!_smtpClient.IsAuthenticated)
         {
-            await _smtpClient.AuthenticateAsync(Sender.Login, Sender.Password, cancelToken);
+            await _smtpClient.AuthenticateAsync(Sender.Login, Sender.Password, cancellationToken);
         }
     }
     public void Dispose()
@@ -113,6 +115,14 @@ public sealed class SmtpEmailService : IEmailSender, IDisposable
         if (_smtpClient.IsConnected)
         {
             _smtpClient.Disconnect(true);
+        }
+        _smtpClient.Dispose();
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (_smtpClient.IsConnected)
+        {
+            await _smtpClient.DisconnectAsync(true);
         }
         _smtpClient.Dispose();
     }

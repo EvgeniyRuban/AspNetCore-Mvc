@@ -21,9 +21,9 @@ public sealed class ProductRepository : IProductRepository
     /// Adding current product into the repository.
     /// </summary>
     /// <returns></returns>
-    /// <exception cref="TaskCanceledException"></exception>
     /// <exception cref="ArgumentNullException"></exception>
-    public async Task AddAsync(ProductToCreate item, CancellationToken cancelToken = default)
+    /// <exception cref="OperationCanceledException"></exception>
+    public async Task Add(ProductToCreate item, CancellationToken cancellationToken = default)
    {
         ArgumentNullException.ThrowIfNull(item);
 
@@ -35,20 +35,8 @@ public sealed class ProductRepository : IProductRepository
             Image = item.Image,
         };
 
-        try
-        {
-            await Task.Run(() => _catalog.TryAdd(product), cancelToken);
-        }
-        catch (TaskCanceledException)
-        {
-            _logger.LogInformation("Task canceled.");
-            throw new TaskCanceledException();
-        }
-        catch(Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            return;
-        }
+        cancellationToken.ThrowIfCancellationRequested();
+        await Task.Run(() => _catalog.TryAdd(product));
 
         _logger.LogDebug("{@item} added to catalog.", item);
     }
@@ -59,27 +47,14 @@ public sealed class ProductRepository : IProductRepository
     /// <returns>
     /// Return the product if product with current id exist.
     /// </returns>
-    /// <exception cref="TaskCanceledException"></exception>
-    public async Task<ProductResponse?> GetAsync(long id, CancellationToken cancelToken = default)
+    ///<exception cref="OperationCanceledException"></exception> 
+    public async Task<ProductResponse?> Get(long id, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Requested product with id: {id}", id);
         Product product = null!;
 
-        try
-        {
-            await Task.Run(() => _catalog.TryGet((int)id, out product), cancelToken);
-        }
-        catch (TaskCanceledException)
-        {
-            _logger.LogInformation("Task canceled.");
-            throw new TaskCanceledException();
-        }
-        catch(Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            return null;
-        }
-        
+        cancellationToken.ThrowIfCancellationRequested();
+        await Task.Run(() => _catalog.TryGet((int)id, out product));
 
         if(product is null)
         {
@@ -101,26 +76,14 @@ public sealed class ProductRepository : IProductRepository
     /// Get all products.
     /// </summary>
     /// <returns></returns>
-    /// <exception cref="TaskCanceledException"></exception>
-    public async Task<IReadOnlyCollection<ProductResponse>> GetAllAsync(CancellationToken cancelToken = default)
+    /// <exception cref="OperationCanceledException"></exception>
+    public async Task<IReadOnlyCollection<ProductResponse>> GetAll(CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Requested all catalog of products.");
         IReadOnlyCollection<Product> products = null!;
 
-        try
-        {
-            products = await Task.Run(() => _catalog.Items, cancelToken);
-        }
-        catch (TaskCanceledException)
-        {
-            _logger.LogInformation("Task canceled.");
-            throw new TaskCanceledException();
-        }
-        catch(Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            return null!;
-        }
+        cancellationToken.ThrowIfCancellationRequested();
+        products = await Task.Run(() => _catalog.Items);
             
         var productsResponse = new List<ProductResponse>(products.Count);
 
@@ -145,26 +108,14 @@ public sealed class ProductRepository : IProductRepository
     /// <returns>
     /// Returns true if the product exist. Otherwise false.
     /// </returns>
-    /// <exception cref="TaskCanceledException"></exception>
-    public async Task<bool> RemoveAsync(long id, CancellationToken cancelToken = default)
+    /// <exception cref="OperationCanceledException"></exception>
+    public async Task<bool> Remove(long id, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Requested to remove a product from the catalog by {id}.", id);
         bool result = false;
 
-        try
-        {
-            result = await Task.Run(() => _catalog.TryRemove((int)id), cancelToken);
-        }
-        catch (TaskCanceledException)
-        {
-            _logger.LogInformation("Task canceled.");
-            throw new TaskCanceledException();
-        }
-        catch(Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            return false;
-        }
+        cancellationToken.ThrowIfCancellationRequested();
+        result = await Task.Run(() => _catalog.TryRemove((int)id));
 
         if (result)
         {
@@ -184,9 +135,12 @@ public sealed class ProductRepository : IProductRepository
     /// <returns>
     /// Returns true if product with current id exist.
     /// </returns>
-    /// <exception cref="TaskCanceledException"></exception>
+    /// <exception cref="OperationCanceledException"></exception>
     /// <exception cref="ArgumentNullException"></exception>
-    public async Task<bool> UpdateAsync(long id, ProductToUpdate newItem, CancellationToken cancelToken = default)
+    public async Task<bool> Update(
+        long id, 
+        ProductToUpdate newItem, 
+        CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Requested product update with id: {id}, to {@newItem}.", id, newItem);
 
@@ -199,20 +153,9 @@ public sealed class ProductRepository : IProductRepository
             Image = newItem.Image,
         };
 
-        try
-        {
-            result = await Task.Run(() => _catalog.TryUpdate((int)id, product), cancelToken);
-        }
-        catch (TaskCanceledException)
-        {
-            _logger.LogInformation("Task canceled.");
-            throw new TaskCanceledException();
-        }
-        catch(Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            return false;
-        }
+        cancellationToken.ThrowIfCancellationRequested();
+        result = await Task.Run(() => _catalog.TryUpdate((int)id, product));
+        
 
         if (result)
         {

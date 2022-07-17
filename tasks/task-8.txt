@@ -1,0 +1,8 @@
+1) Реализуйте регистрацию и перехват доменного события о том, что товар добавлен в каталог. 
+Перенесите вызов метода отправки Email’a в специальный обработчик.
+
+Пример реализации доменных событий с вебинара:
+https://github.com/rodion-m/GB_ASPNETCourse_202206/tree/master/Lesson.DI/DomainEvents
+
+Статья про доменные события: 
+https://enterprisecraftsmanship.com/posts/domain-events-simple-reliable-solution/
