@@ -5,7 +5,7 @@ namespace WebApp.Services;
 
 public sealed class ProductService : IProductService
 {
-    private readonly IProductRepository _productRepository = null!;
+    private readonly IProductRepository _productRepository;
 
     public ProductService(IProductRepository productRepository, ILogger<ProductService> logger)
     {

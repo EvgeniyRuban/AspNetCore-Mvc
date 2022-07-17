@@ -12,13 +12,16 @@ builder.Host.UseSerilog((ctx, conf) =>
     conf.ReadFrom.Configuration(ctx.Configuration);
 });
 
-builder.Services.Configure<SmtpCredentials>(
-    builder.Configuration.GetSection(nameof(SmtpCredentials)));
+builder.Services.Configure<SmtpConfig>(
+    builder.Configuration.GetSection(nameof(SmtpConfig)));
+builder.Services.Configure<ServerStatusNotificationConfig>(
+    builder.Configuration.GetSection(nameof(ServerStatusNotificationConfig)));
 
+builder.Services.AddHostedService<ServerStatusNotificationService>();
 builder.Services.AddSingleton<Catalog<Product>>();
-builder.Services.AddSingleton<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<IEmailSender, MailKitSmtpEmailSender>();
+builder.Services.AddSingleton<IEmailSender, MailKitSmtpEmailSender>();
 
 var app = builder.Build();
 
@@ -39,6 +42,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=ProductCatalog}/{action=Products}");
+    pattern: "{controller=ProductCatalog}/{action=ProductAddition}");
 
 app.Run();

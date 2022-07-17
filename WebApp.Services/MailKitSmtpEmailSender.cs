@@ -13,10 +13,10 @@ public sealed class MailKitSmtpEmailSender : IEmailSender, IDisposable, IAsyncDi
     private MessageSenderInfo _sender = null!;
 
     public MailKitSmtpEmailSender(
-        IOptions<SmtpCredentials> options, 
+        IOptions<SmtpConfig> config, 
         ILogger<MailKitSmtpEmailSender> logger)
     {
-        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(config);
         ArgumentNullException.ThrowIfNull(logger);
 
         _logger = logger;
@@ -24,12 +24,12 @@ public sealed class MailKitSmtpEmailSender : IEmailSender, IDisposable, IAsyncDi
         {
             Sender = new()
             {
-                Name = options.Value.Name,
-                Host = options.Value.Host,
-                Login = options.Value.Login,
-                Address = options.Value.Address,
-                Password = options.Value.Password,
-                Port = options.Value.Port,
+                Name = config.Value.Name,
+                Host = config.Value.Host,
+                Login = config.Value.Login,
+                Address = config.Value.Address,
+                Password = config.Value.Password,
+                Port = config.Value.Port,
             };
         }  
         catch(Exception ex)

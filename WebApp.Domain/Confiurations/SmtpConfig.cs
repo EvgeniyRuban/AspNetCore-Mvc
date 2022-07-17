@@ -1,6 +1,6 @@
 ﻿namespace WebApp.Domain;
 
-public sealed class SmtpCredentials
+public sealed class SmtpConfig
 {
     public string Name { get; set; } = null!;
     public string Host { get; set; } = null!;
