@@ -16,8 +16,11 @@ builder.Services.Configure<SmtpConfig>(
     builder.Configuration.GetSection(nameof(SmtpConfig)));
 builder.Services.Configure<ServerStatusNotificationConfig>(
     builder.Configuration.GetSection(nameof(ServerStatusNotificationConfig)));
+builder.Services.Configure<ProductAddedEventHandlerConfig>(
+    builder.Configuration.GetSection(nameof(ProductAddedEventHandlerConfig)));
 
 builder.Services.AddHostedService<ServerStatusNotificationService>();
+builder.Services.AddHostedService<ProductAddedEventHandler>();
 builder.Services.AddSingleton<Catalog<Product>>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();

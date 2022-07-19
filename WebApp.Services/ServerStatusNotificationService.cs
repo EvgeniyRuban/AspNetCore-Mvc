@@ -6,6 +6,10 @@ using WebApp.Domain;
 
 namespace WebApp.Services;
 
+/// <summary>
+/// The background service notifies the listener of its own availability, 
+/// indicating the time since the start of the current session.
+/// </summary>
 public sealed class ServerStatusNotificationService : BackgroundService
 {
     private readonly ILogger<ServerStatusNotificationService> _logger;
@@ -44,8 +48,9 @@ public sealed class ServerStatusNotificationService : BackgroundService
 
         while(await timer.WaitForNextTickAsync(stoppingToken))
         {
-            _logger.LogInformation("{Message}. Current session length - {Time}", message.Body, sw.Elapsed);
+            
             await _emailSender.SendMessage(message, recipient, stoppingToken);
+            _logger.LogInformation("{Message}. Current session length - {Time}", message.Body, sw.Elapsed);
         }
     }
 }

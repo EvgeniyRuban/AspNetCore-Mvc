@@ -15,25 +15,22 @@ public sealed class ProductService : IProductService
         _productRepository = productRepository;
     }
 
-    /// <summary></summary>
-    /// <exception cref="ArgumentNullException"></exception>
     public async Task Add(ProductToCreate item, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(item);
         await _productRepository.Add(item, cancellationToken);
+        DomainEventsManager.Raise(new ProductAdded(new ProductResponse
+        {
+            Title = item.Title,
+            Image = item.Image,
+        }));
     }
-
     public async Task<ProductResponse?> Get(long id, CancellationToken cancellationToken = default) 
         => await _productRepository.Get(id, cancellationToken);
-
     public async Task<IReadOnlyCollection<ProductResponse>> GetAll(CancellationToken cancellationToken = default) 
         => await _productRepository.GetAll(cancellationToken);
-
     public async Task<bool> Remove(long id, CancellationToken cancellationToken = default) 
         => await _productRepository.Remove(id, cancellationToken);
-
-    /// <summary></summary>
-    /// <exception cref="ArgumentNullException"></exception>
     public async Task<bool> Update(long id, ProductToUpdate newItem, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(newItem);

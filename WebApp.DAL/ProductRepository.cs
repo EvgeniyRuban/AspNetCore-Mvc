@@ -17,12 +17,6 @@ public sealed class ProductRepository : IProductRepository
         _logger = logger;
     }
 
-    /// <summary>
-    /// Adding current product into the repository.
-    /// </summary>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="OperationCanceledException"></exception>
     public async Task Add(ProductToCreate item, CancellationToken cancellationToken = default)
    {
         ArgumentNullException.ThrowIfNull(item);
@@ -40,14 +34,6 @@ public sealed class ProductRepository : IProductRepository
 
         _logger.LogDebug("{@item} added to catalog.", item);
     }
-
-    /// <summary>
-    /// Get product by id.
-    /// </summary>
-    /// <returns>
-    /// Return the product if product with current id exist.
-    /// </returns>
-    ///<exception cref="OperationCanceledException"></exception> 
     public async Task<ProductResponse?> Get(long id, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Requested product with id: {id}", id);
@@ -67,16 +53,9 @@ public sealed class ProductRepository : IProductRepository
         return new ProductResponse
         {
             Title = product.Title,
-            Id = product.Id,
             Image = product.Image,
         };
     }
-
-    /// <summary>
-    /// Get all products.
-    /// </summary>
-    /// <returns></returns>
-    /// <exception cref="OperationCanceledException"></exception>
     public async Task<IReadOnlyCollection<ProductResponse>> GetAll(CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Requested all catalog of products.");
@@ -91,7 +70,6 @@ public sealed class ProductRepository : IProductRepository
         {
             productsResponse.Add(new ProductResponse
             {
-                Id = item.Id,
                 Title = item.Title,
                 Image = item.Image,
             });
@@ -101,14 +79,6 @@ public sealed class ProductRepository : IProductRepository
 
         return productsResponse;
     }
-
-    /// <summary>
-    /// Removes product from repository by id.
-    /// </summary>
-    /// <returns>
-    /// Returns true if the product exist. Otherwise false.
-    /// </returns>
-    /// <exception cref="OperationCanceledException"></exception>
     public async Task<bool> Remove(long id, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Requested to remove a product from the catalog by {id}.", id);
@@ -128,15 +98,6 @@ public sealed class ProductRepository : IProductRepository
 
         return result;
     }
-
-    /// <summary>
-    /// Updated the product with current id.
-    /// </summary>
-    /// <returns>
-    /// Returns true if product with current id exist.
-    /// </returns>
-    /// <exception cref="OperationCanceledException"></exception>
-    /// <exception cref="ArgumentNullException"></exception>
     public async Task<bool> Update(
         long id, 
         ProductToUpdate newItem, 
