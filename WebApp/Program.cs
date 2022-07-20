@@ -14,10 +14,15 @@ builder.Host.UseSerilog((ctx, conf) =>
 
 builder.Services.Configure<SmtpConfig>(
     builder.Configuration.GetSection(nameof(SmtpConfig)));
+
 builder.Services.Configure<ServerStatusNotificationConfig>(
     builder.Configuration.GetSection(nameof(ServerStatusNotificationConfig)));
+
 builder.Services.Configure<ProductAddedEventHandlerConfig>(
     builder.Configuration.GetSection(nameof(ProductAddedEventHandlerConfig)));
+
+builder.Services.Configure<UserAgentFilterConfig>(
+    builder.Configuration.GetSection(nameof(UserAgentFilterConfig)));
 
 builder.Services.AddHostedService<ServerStatusNotificationService>();
 builder.Services.AddHostedService<ProductAddedEventHandler>();
@@ -38,6 +43,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseSerilogRequestLogging();
+
+app.UseMiddleware<UserAgentFilterMiddleware>();
 
 app.UseRouting();
 
