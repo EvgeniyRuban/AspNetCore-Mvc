@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApp.Services", "WebApp.S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApp.Domain", "WebApp.Domain\WebApp.Domain.csproj", "{509BECC8-DB17-432F-95CB-F397E9FE848D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApp.DAL", "WebApp.DAL\WebApp.DAL.csproj", "{745EC0B2-7F05-420C-9E34-1C3A7BCB68BA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApp.DAL", "WebApp.DAL\WebApp.DAL.csproj", "{745EC0B2-7F05-420C-9E34-1C3A7BCB68BA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

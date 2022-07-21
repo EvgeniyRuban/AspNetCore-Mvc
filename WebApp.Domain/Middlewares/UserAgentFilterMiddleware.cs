@@ -26,10 +26,11 @@ public sealed class UserAgentFilterMiddleware
 
         foreach (var validAgent in _config.ValidUserAgents)
         {
-            if (userAgent.Contains(validAgent))
+            if (userAgent.ToString().ToLower().Contains(validAgent))
             {
                 _logger.LogInformation("User-agent {agent} is valid.", userAgent);
                 await _next(context);
+                return;
             }
         }
 
